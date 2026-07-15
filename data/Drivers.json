@@ -1,0 +1,15 @@
+{
+  "25ebaaa9-29e8-4802-9f5b-b0b6d8ebb7a5": {
+    "uuid": "25ebaaa9-29e8-4802-9f5b-b0b6d8ebb7a5",
+    "name": "Rishivandan S",
+    "number": "8754342307",
+    "location": {
+      "latitude": 13.0416731,
+      "longitude": 80.1885254,
+      "updatedAt": "2026-07-15T12:55:55.804Z"
+    },
+    "ambulanceType": "BLS",
+    "online": true,
+    "updatedAt": "2026-07-15T12:55:55.804Z"
+  }
+}

@@ -2,6 +2,8 @@ const nearestDriver = require("../services/nearestDriver");
 const socket = require("../sockets/socket");
 const socketService = require("../services/socketService");
 const supabase = require("../config/supabase");
+const userStore = require("../services/userStore");
+const driverStore = require("../services/driverStore");
 
 // In-memory bookings, keyed by userId (one active booking per user at a
 // time). This is mirrored into the Supabase "bookings" table (see
@@ -114,6 +116,21 @@ exports.requestBooking = async (req, res) => {
 
         syncBookingToDb(bookings[userId]);
 
+        // Users.json — record the ambulance type picked and the red-pin
+        // pickup / green-pin destination exactly as set on SetLocation.dart,
+        // the moment "Confirm" is tapped.
+        userStore.setBookingDetails(userId, {
+            name: userName,
+            number: userPhone,
+            ambulanceType,
+            pickupLatitude: latitude,
+            pickupLongitude: longitude,
+            pickupAddress,
+            destLatitude: destLatitude ?? null,
+            destLongitude: destLongitude ?? null,
+            destAddress
+        });
+
         const io = socket.getIO();
         const driverSocket = socketService.getDriverSocket(driver.driverId);
 
@@ -205,6 +222,10 @@ exports.acceptBooking = async (req, res) => {
             vehicleNumber: driverProfile?.vehicle_number || null
         };
 
+        // Drivers.json — fill in name/number now that we've looked the
+        // profile up, so the file has more than just id/location/online.
+        driverStore.setProfile(driverId, driverInfo.name, driverInfo.phone, driverInfo.ambulanceType);
+
         const io = socket.getIO();
         const userSocket = socketService.getUserSocket(userId);
 
@@ -245,6 +266,7 @@ exports.rejectBooking = (req, res) => {
 
         booking.status = "REJECTED";
         syncBookingToDb(booking);
+        userStore.clearBooking(userId);
         delete bookings[userId];
 
         const io = socket.getIO();
@@ -286,6 +308,7 @@ exports.completeBooking = async (req, res) => {
 
         booking.status = "COMPLETED";
         syncBookingToDb(booking);
+        userStore.clearBooking(userId);
 
         const io = socket.getIO();
         const userSocket = socketService.getUserSocket(userId);
@@ -320,6 +343,7 @@ exports.cancelBooking = async (req, res) => {
 
         booking.status = "CANCELLED";
         syncBookingToDb(booking);
+        userStore.clearBooking(userId);
 
         const io = socket.getIO();
 

@@ -1,5 +1,6 @@
 const socketService = require("../services/socketService");
 const tracking = require("../services/trackingService");
+const driverStore = require("../services/driverStore");
 
 let io;
 
@@ -76,6 +77,7 @@ function initialize(server) {
             if (!driverId || latitude === undefined || longitude === undefined) return;
 
             tracking.updateDriverLocation(driverId, latitude, longitude, undefined, true);
+            driverStore.updateLocation(driverId, latitude, longitude, undefined, true);
 
             // Lazy require to avoid a circular require at module load time
             // (bookingController requires this file for io.getIO()).

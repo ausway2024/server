@@ -1,4 +1,4 @@
-const tracking = require("./trackingService");
+const driverStore = require("./driverStore");
 
 // Haversine Formula
 function calculateDistance(lat1, lon1, lat2, lon2) {
@@ -22,7 +22,11 @@ function calculateDistance(lat1, lon1, lat2, lon2) {
 
 function findNearestDriver(userLat, userLng, ambulanceType) {
 
-    const drivers = tracking.getAllDrivers();
+    // Drivers.json is the source of truth here — every driver location
+    // ping (idle or mid-ride) and every online/offline flip is written
+    // straight into it, so reading it fresh on every booking request
+    // guarantees this always matches against current data.
+    const drivers = driverStore.getAllDrivers();
 
     let nearest = null;
     let minDistance = Number.MAX_VALUE;
@@ -32,14 +36,15 @@ function findNearestDriver(userLat, userLng, ambulanceType) {
         const driver = drivers[driverId];
 
         if (!driver.online) continue;
+        if (!driver.location) continue;
 
         if (driver.ambulanceType !== ambulanceType) continue;
 
         const distance = calculateDistance(
             userLat,
             userLng,
-            driver.latitude,
-            driver.longitude
+            driver.location.latitude,
+            driver.location.longitude
         );
 
         if (distance < minDistance) {
@@ -49,7 +54,10 @@ function findNearestDriver(userLat, userLng, ambulanceType) {
             nearest = {
                 driverId,
                 distance,
-                ...driver
+                latitude: driver.location.latitude,
+                longitude: driver.location.longitude,
+                ambulanceType: driver.ambulanceType,
+                online: driver.online
             };
         }
     }

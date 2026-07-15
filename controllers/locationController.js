@@ -1,5 +1,7 @@
 const tracking = require("../services/trackingService");
 const supabase = require("../config/supabase");
+const userStore = require("../services/userStore");
+const driverStore = require("../services/driverStore");
 
 // =================================
 // Update User Location
@@ -26,6 +28,11 @@ exports.updateUser = (req, res) => {
         longitude
 
     );
+
+    // Mirror into Users.json — this is what keeps the file's
+    // "current location, every 2 sec" field up to date while the
+    // rider app is open (see LocationService in the User App).
+    userStore.updateLocation(id, latitude, longitude);
 
     res.json({
 
@@ -73,6 +80,10 @@ exports.updateDriver = (req, res) => {
 
     console.log(`📍 Driver ${id} location update | online=${online} | (${latitude}, ${longitude})`);
 
+    // Mirror into Drivers.json — every ~2s ping from DriverTrackingService
+    // (idle) or DriverNavigationPage (on a ride) lands here.
+    driverStore.updateLocation(id, latitude, longitude, ambulanceType, online);
+
     // Best-effort mirror into Supabase so the driver's status/location is
     // visible from the dashboard/DB, not just in this server's memory.
     supabase
@@ -106,7 +117,7 @@ exports.getDrivers = (req, res) => {
 
     res.json(
 
-        tracking.getAllDrivers()
+        driverStore.getAllDrivers()
 
     );
 
@@ -120,7 +131,7 @@ exports.getUsers = (req, res) => {
 
     res.json(
 
-        tracking.getAllUsers()
+        userStore.getAllUsers()
 
     );
 

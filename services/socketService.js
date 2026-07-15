@@ -1,4 +1,5 @@
 const supabase = require("../config/supabase");
+const driverStore = require("./driverStore");
 
 const connectedDrivers = new Map(); // driverId -> socketId
 const connectedUsers = new Map();   // userId -> socketId
@@ -58,6 +59,7 @@ function registerDriver(driverId, socketId) {
     connectedDrivers.set(driverId, socketId);
     console.log("🟢 DRIVER ONLINE:", driverId, "| total online:", connectedDrivers.size);
     syncDriverStatus(driverId, true);
+    driverStore.setOnlineState(driverId, true);
 }
 
 function registerUser(userId, socketId) {
@@ -85,6 +87,7 @@ function removeDriver(driverId) {
 
     console.log("🔴 DRIVER OFFLINE:", driverId, "| total online:", connectedDrivers.size);
     syncDriverStatus(driverId, false);
+    driverStore.setOnlineState(driverId, false);
 }
 
 function removeUser(userId) {
@@ -112,6 +115,7 @@ function scheduleRemoval(socketId) {
                     connectedDrivers.delete(driverId);
                     console.log("🔴 DRIVER OFFLINE (grace period expired):", driverId);
                     syncDriverStatus(driverId, false);
+                    driverStore.setOnlineState(driverId, false);
                 }
                 pendingDriverRemovals.delete(driverId);
             }, GRACE_PERIOD_MS);

@@ -1,6 +1,7 @@
 const supabase = require("../config/supabase");
 const socketService = require("../services/socketService");
 const tracking = require("../services/trackingService");
+const driverStore = require("../services/driverStore");
 
 // Health Check
 exports.healthCheck = async (req, res) => {
@@ -79,6 +80,8 @@ exports.completeProfile = async (req, res) => {
             return res.status(400).json({ status: false, message: error.message });
         }
 
+        driverStore.setProfile(id, driverName, data?.phone ?? null, ambulanceType);
+
         res.json({ status: true, driver: data });
 
     } catch (err) {
@@ -111,6 +114,7 @@ exports.setStatus = async (req, res) => {
 
         const current = tracking.getDriver(id) || {};
         tracking.updateDriverLocation(id, current.latitude, current.longitude, current.ambulanceType, online);
+        driverStore.setOnlineState(id, online);
 
         console.log(`${online ? "🟢" : "🔴"} Driver ${id} set ${online ? "ONLINE" : "OFFLINE"} via REST`);
 
