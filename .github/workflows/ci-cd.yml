@@ -46,4 +46,4 @@ jobs:
             docker pull ${{ secrets.DOCKER_USERNAME }}/server:latest
             docker stop flask || true
             docker rm flask || true
-            docker run -d --name flask -p 3000:3000 ${{ secrets.DOCKER_USERNAME }}/server:latest
+            docker run -d --name flask --restart always -p 3000:3000 ${{ secrets.DOCKER_USERNAME }}/server:latest
