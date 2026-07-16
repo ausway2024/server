@@ -1,0 +1,16 @@
+{
+  "25ebaaa9-29e8-4802-9f5b-b0b6d8ebb7a5": {
+    "uuid": "25ebaaa9-29e8-4802-9f5b-b0b6d8ebb7a5",
+    "name": "ROSHAN B R",
+    "number": "+918754342307",
+    "location": {
+      "latitude": 13.0416736,
+      "longitude": 80.1885049,
+      "updatedAt": "2026-07-15T12:55:55.379Z"
+    },
+    "ambulanceType": null,
+    "pickupLocation": null,
+    "destinationLocation": null,
+    "updatedAt": "2026-07-15T12:55:55.379Z"
+  }
+}
